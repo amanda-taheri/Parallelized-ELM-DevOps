@@ -1,0 +1,46 @@
+# --- Python Environment ---
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# --- Virtual Environments ---
+# Excluding the local environment to keep the repo clean
+.venv/
+venv/
+env/
+ENV/
+bin/
+lib/
+include/
+
+# --- Data & Large Files ---
+# Do not track datasets to save storage and avoid copyright issues
+data/
+*.gz
+*.csv
+*.data
+*.log
+
+# --- Operating System Files ---
+# macOS specific files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows specific files
+Thumbs.db
+desktop.ini
+
+# --- IDEs & Editors ---
+# Visual Studio Code, PyCharm, and others
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Distribution & Build ---
+build/
+dist/
+*.egg-info/
