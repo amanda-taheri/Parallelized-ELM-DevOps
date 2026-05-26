@@ -27,28 +27,51 @@ class ELMSVD:
         self.input_weights = None
         self.biases = None
         self.output_weights = None
+        self.classes_ = None
 
     def _svd_init(self, X):
         """
         Implements SVD-based weight initialization (refer to page 4 of the paper).
-        Extracts principal components of the input data to set initial weights.
+        Extracts principal components of the augmented input data to set initial
+        weights and biases from V_r.
         """
-        # Singular Value Decomposition: X = U * S * Vh
-        # Vh contains the principal axes of the data
-        _, _, Vh = svd(X, full_matrices=False)
+        # Singular Value Decomposition: [X, 1] = U * S * Vh
+        # Vh contains the principal axes for both input weights and bias.
+        X_aug = np.hstack([X, np.ones((X.shape[0], 1))])
+        _, _, Vh = svd(X_aug, full_matrices=False)
         
-        # Selection of weights from the Vh matrix (eigenvectors)
-        if self.hidden_size <= self.input_size:
+        # Selection of hidden-node parameters from Vh (eigenvectors).
+        n_components = Vh.shape[0]
+        if self.hidden_size <= n_components:
             # Use top principal components if hidden_size is small
-            weights = Vh[:self.hidden_size, :].T
+            params = Vh[:self.hidden_size, :].T
         else:
             # Tile/Repeat patterns if hidden_size is larger than input features
-            repeats = int(np.ceil(self.hidden_size / self.input_size))
-            weights = np.tile(Vh.T, (1, repeats))[:, :self.hidden_size]
+            repeats = int(np.ceil(self.hidden_size / n_components))
+            params = np.tile(Vh.T, (1, repeats))[:, :self.hidden_size]
             
-        # Initialize biases randomly (or could be zeros)
-        biases = np.random.randn(1, self.hidden_size)
+        weights = params[:-1, :]
+        biases = params[-1:, :]
         return weights, biases
+
+    def _prepare_targets(self, y):
+        y = np.asarray(y)
+        if y.ndim > 1:
+            return y
+
+        classes = np.unique(y)
+        self.classes_ = classes
+        if len(classes) <= 2:
+            if len(classes) == 2:
+                class_to_index = {label: idx for idx, label in enumerate(classes)}
+                return np.array([class_to_index[label] for label in y], dtype=float).reshape(-1, 1)
+            return y.reshape(-1, 1)
+
+        target = np.zeros((len(y), len(classes)))
+        class_to_index = {label: idx for idx, label in enumerate(classes)}
+        for row, label in enumerate(y):
+            target[row, class_to_index[label]] = 1.0
+        return target
 
     def _activate(self, x):
         """Hidden layer activation function."""
@@ -71,9 +94,17 @@ class ELMSVD:
         
         # Calculate Output Weights (Beta) using pseudo-inverse
         # Solve H * Beta = T => Beta = H+ * T
-        self.output_weights = np.dot(pinv(H), y.reshape(-1, 1))
+        self.output_weights = np.dot(pinv(H), self._prepare_targets(y))
 
-    def predict(self, X):
+    def predict_scores(self, X):
         """Forward pass to generate predictions."""
         H = self._activate(np.dot(X, self.input_weights) + self.biases)
-        return np.dot(H, self.output_weights).flatten()
+        scores = np.dot(H, self.output_weights)
+        return scores.flatten() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Forward pass with class labels for multi-class targets."""
+        scores = self.predict_scores(X)
+        if scores.ndim == 1 or self.classes_ is None or len(self.classes_) <= 2:
+            return scores
+        return self.classes_[np.argmax(scores, axis=1)]

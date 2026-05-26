@@ -31,17 +31,39 @@ class ParallelELM:
         self.biases = None
         # Final synthesized output weights
         self.output_weights = None
+        self.classes_ = None
 
     def _svd_init(self, X):
         """Standard SVD initialization to ensure all parallel modules start correctly."""
-        _, _, Vh = svd(X, full_matrices=False)
-        if self.hidden_size <= self.input_size:
-            weights = Vh[:self.hidden_size, :].T
+        X_aug = np.hstack([X, np.ones((X.shape[0], 1))])
+        _, _, Vh = svd(X_aug, full_matrices=False)
+        n_components = Vh.shape[0]
+        if self.hidden_size <= n_components:
+            params = Vh[:self.hidden_size, :].T
         else:
-            repeats = int(np.ceil(self.hidden_size / self.input_size))
-            weights = np.tile(Vh.T, (1, repeats))[:, :self.hidden_size]
-        biases = np.random.randn(1, self.hidden_size)
-        return weights, biases
+            repeats = int(np.ceil(self.hidden_size / n_components))
+            params = np.tile(Vh.T, (1, repeats))[:, :self.hidden_size]
+        return params[:-1, :], params[-1:, :]
+
+    def _prepare_targets(self, y):
+        y = np.asarray(y)
+        if y.ndim > 1:
+            return y
+
+        classes = np.unique(y) if self.classes_ is None else self.classes_
+        self.classes_ = classes
+        if len(classes) <= 2:
+            if len(classes) == 2:
+                class_to_index = {label: idx for idx, label in enumerate(classes)}
+                return np.array([class_to_index[label] for label in y], dtype=float).reshape(-1, 1)
+            return y.reshape(-1, 1)
+
+        target = np.zeros((len(y), len(classes)))
+        class_to_index = {label: idx for idx, label in enumerate(classes)}
+        for row, label in enumerate(y):
+            if label in class_to_index:
+                target[row, class_to_index[label]] = 1.0
+        return target
 
     def _activate(self, x):
         if self.activation == 'sigmoid':
@@ -52,7 +74,7 @@ class ParallelELM:
         """Trains a single ELM module on a data block."""
         H = self._activate(np.dot(X_block, self.input_weights) + self.biases)
         # Beta_i = H+ * T
-        beta_i = np.dot(pinv(H), y_block.reshape(-1, 1))
+        beta_i = np.dot(pinv(H), self._prepare_targets(y_block))
         return beta_i
 
     def fit(self, X, y):
@@ -68,8 +90,9 @@ class ParallelELM:
         self.input_weights, self.biases = self._svd_init(X[:sample_size])
 
         # 2. Partition Data
+        target = self._prepare_targets(y)
         X_blocks = np.array_split(X, self.n_workers)
-        y_blocks = np.array_split(y, self.n_workers)
+        y_blocks = np.array_split(target, self.n_workers)
 
         # 3. Parallel Execution (Multi-core)
         # Each worker calculates its own Beta_i
@@ -82,7 +105,15 @@ class ParallelELM:
         # The paper suggests combining local weights into the Knowledge Base
         self.output_weights = np.mean(beta_list, axis=0)
 
-    def predict(self, X):
+    def predict_scores(self, X):
         """Forward pass using synthesized global weights."""
         H = self._activate(np.dot(X, self.input_weights) + self.biases)
-        return np.dot(H, self.output_weights).flatten()
+        scores = np.dot(H, self.output_weights)
+        return scores.flatten() if scores.shape[1] == 1 else scores
+
+    def predict(self, X):
+        """Forward pass with class labels for multi-class targets."""
+        scores = self.predict_scores(X)
+        if scores.ndim == 1 or self.classes_ is None or len(self.classes_) <= 2:
+            return scores
+        return self.classes_[np.argmax(scores, axis=1)]

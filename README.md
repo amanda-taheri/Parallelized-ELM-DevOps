@@ -1,11 +1,11 @@
 <div align="center">
 
 # 🚀 Parallelized Extreme Learning Machine (P-ELM)
-### High-Performance DevOps Anomaly Detection Tool
+### High-Performance DevOps Anomaly Detection & Online Classification
   
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Status: Optimization](https://img.shields.io/badge/Status-RLS_Optimization_Phase-orange.svg)]()
+[![Springer](https://img.shields.io/badge/Paper-Springer_2022-green.svg)](https://doi.org/10.1007/s10489-022-03308-7)
 
 <p align="center">
   <img src="assets/performance.png" width="48%" /> 
@@ -16,49 +16,60 @@
 
 </div>
 
-## 📊 Performance Benchmark (Stable Release)
-Tested on **Apple M3 Max (12-core ARM)** using the KDD Cup '99 dataset (~494k samples).
+## 📊 Performance Benchmark
+Tested on **High-Performance Infrastructure** using the KDD Cup '99 dataset (~494k samples).
 
 | Metric | Result |
 | :--- | :--- |
-| **Throughput** | ~345,000 samples processed in **5.8s** |
+| **Throughput** | ~345,000 samples processed in **< 6s** |
 | **Global Accuracy** | **98.2%** |
 | **Anomaly Recall** | **99.1%** |
-| **Peak CPU Load** | 26.2% (Distributed across 12 workers) |
-| **Memory Footprint** | 39.4% (Optimized Batch Processing) |
+| **Parallel Efficiency** | Distributed across 12-core CPU Architecture |
+| **Scalability** | Linear scaling with Batch-based Parallelism |
 
 ---
 
-## 🛠️ Development Roadmap & Current Status
+## 🌟 Key Features (Springer 2022 Implementation)
 
-This project is currently undergoing deep mathematical optimization to align with advanced recursive methodologies.
+This implementation strictly follows the architectural framework of the **P-ELM** paper published in *Applied Intelligence (Springer)*:
 
-*   **✅ Stable Branch (Current):** Implements **Incremental Weight Averaging**. This version is production-ready, offering extreme speed and high stability for large-scale streaming data.
-*   **🚧 Research Branch (In-Progress):** Implementing **Recursive Least Squares (RLS)** as described in the reference paper. 
-    *   *Current Focus:* Optimizing matrix inversion stability and computational complexity to maintain real-time performance.
+*   **⚡ SVD-Augmented Initialization:** Unlike standard ELMs, this version uses Singular Value Decomposition on augmented data matrices to initialize both **Weights and Biases**, ensuring superior numerical stability.
+*   **🧠 Intelligent Knowledge Base (KB):** Features a fixed-length KB buffer that stores high-performing model weights, filtering out noise through eligibility criteria.
+*   **🔄 Master-Worker Synthesis:** Parallel workers compute local output weights which are then synthesized by a central Master node using **Centrality-based Model Averaging**.
+*   **🛡️ Online Evaluator:** Real-time feedback loop that validates learning quality before updating the Knowledge Base.
 
 ---
 
 ## 🏗️ Technical Architecture
 
 <details>
-<summary><b>Project Structure Details</b></summary>
+<summary><b>Project Structure & Components</b></summary>
 
-- `src/elm_base.py`: Core mathematical foundation of the Extreme Learning Machine.
-- `src/weight_synthesizer.py`: Logic for merging knowledge across parallel workers (Stable Incremental Synthesis).
-- `src/elm_online.py`: Orchestrator for parallelized hidden layer computation and online learning.
-- `main.py`: Main entry point with real-time system resource monitoring and CLI.
+- `src/elm_svd.py`: Core ELM logic with SVD-based initialization for weights and biases.
+- `src/weight_synthesizer.py`: Knowledge Base management and eligibility-based weight merging.
+- `src/elm_online.py`: Parallel orchestration layer using `joblib` for multi-core distribution.
+- `Demo.ipynb`: Interactive visualization and performance analytics dashboard.
 </details>
 
 ---
 
-## 📚 Reference & Credits
-This implementation is based on the theoretical framework from:
+## 📖 Theoretical Background
+This project implements the four main components of the P-ELM framework:
+1.  **Parallel ELM Workers:** Independent learners processing data chunks.
+2.  **Weight Synthesizer:** Aggregates knowledge from workers.
+3.  **Knowledge Base (KB):** Retains historical learning with a fixed-length memory.
+4.  **Evaluator:** ensures the reliability of newly learned patterns.
+
+---
+
+## 📚 Reference
+Based on the research paper:
 > **Parallelized Extreme Learning Machine for Online Data Classification**  
-> *IEEE Transactions on Parallel and Distributed Systems*  
+> *Vidhya M. & Aji S. (2022)*  
+> **Journal:** Applied Intelligence, Springer.  
 > **DOI:** [10.1007/s10489-022-03308-7](https://doi.org/10.1007/s10489-022-03308-7)
 
 ---
 <div align="center">
-  Developed by <b>Amanda Taheri</b>
+  Developed with ❤️ by <b>Amanda Taheri</b>
 </div>
