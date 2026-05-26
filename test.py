@@ -35,32 +35,10 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
+import settings
 from src.elm_base import ELMBase
 from src.elm_online import OnlineParallelELM
 from src.elm_svd import ELMSVD
-
-
-DATA_PATH = "data/kddcup.data_10_percent.gz"
-ASSETS_DIR = "assets"
-README_PATH = "README.md"
-RESULTS_CSV = os.path.join(ASSETS_DIR, "benchmark_results.csv")
-
-
-KDD_COLUMNS = [
-    "duration", "protocol_type", "service", "flag", "src_bytes",
-    "dst_bytes", "land", "wrong_fragment", "urgent", "hot",
-    "num_failed_logins", "logged_in", "num_compromised", "root_shell",
-    "su_attempted", "num_root", "num_file_creations", "num_shells",
-    "num_access_files", "num_outbound_cmds", "is_host_login",
-    "is_guest_login", "count", "srv_count", "serror_rate",
-    "srv_serror_rate", "rerror_rate", "srv_rerror_rate",
-    "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate",
-    "dst_host_count", "dst_host_srv_count", "dst_host_same_srv_rate",
-    "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
-    "dst_host_srv_diff_host_rate", "dst_host_serror_rate",
-    "dst_host_srv_serror_rate", "dst_host_rerror_rate",
-    "dst_host_srv_rerror_rate", "label",
-]
 
 
 @dataclass
@@ -78,7 +56,7 @@ class BenchmarkResult:
 
 
 class ResourceMonitor:
-    def __init__(self, interval=0.1):
+    def __init__(self, interval=settings.RESOURCE_SAMPLE_INTERVAL):
         self.interval = interval
         self.process = psutil.Process(os.getpid())
         self.cpu_samples = []
@@ -113,7 +91,7 @@ class ResourceMonitor:
 
 def load_kdd_data(file_path, max_samples=None, random_state=42):
     print(f"Loading dataset: {file_path}")
-    df = pd.read_csv(file_path, compression="gzip", header=None, names=KDD_COLUMNS)
+    df = pd.read_csv(file_path, compression="gzip", header=None, names=settings.KDD_COLUMNS)
 
     if max_samples and max_samples > 0 and max_samples < len(df):
         df = df.sample(n=max_samples, random_state=random_state).reset_index(drop=True)
@@ -188,7 +166,7 @@ def train_online_parallel(model, X_train, y_train, batch_size, X_eval, y_eval):
 
 
 def run_benchmark(args):
-    os.makedirs(ASSETS_DIR, exist_ok=True)
+    os.makedirs(settings.ASSETS_DIR, exist_ok=True)
 
     if not os.path.exists(args.data):
         raise FileNotFoundError(f"Dataset not found: {args.data}")
@@ -297,8 +275,8 @@ def results_frame(results):
 
 def save_results(results):
     df = results_frame(results)
-    df.to_csv(RESULTS_CSV, index=False)
-    print(f"Saved metrics: {RESULTS_CSV}")
+    df.to_csv(settings.RESULTS_CSV, index=False)
+    print(f"Saved metrics: {settings.RESULTS_CSV}")
 
 
 def save_plots(results):
@@ -319,7 +297,7 @@ def save_plots(results):
     ax.set_ylabel("Score")
     plt.xticks(rotation=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(ASSETS_DIR, "accuracy.png"), dpi=300)
+    plt.savefig(os.path.join(settings.ASSETS_DIR, "accuracy.png"), dpi=300)
     plt.close()
 
     plt.figure(figsize=(10, 5))
@@ -329,7 +307,7 @@ def save_plots(results):
     ax.set_ylabel("Seconds")
     plt.xticks(rotation=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(ASSETS_DIR, "performance.png"), dpi=300)
+    plt.savefig(os.path.join(settings.ASSETS_DIR, "performance.png"), dpi=300)
     plt.close()
 
     plt.figure(figsize=(10, 5))
@@ -345,7 +323,7 @@ def save_plots(results):
     ax.set_ylabel("Observed Value")
     plt.xticks(rotation=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(ASSETS_DIR, "resources.png"), dpi=300)
+    plt.savefig(os.path.join(settings.ASSETS_DIR, "resources.png"), dpi=300)
     plt.close()
 
     best = max(results, key=lambda item: item.accuracy)
@@ -363,10 +341,10 @@ def save_plots(results):
     plt.xlabel("Predicted")
     plt.ylabel("True")
     plt.tight_layout()
-    plt.savefig(os.path.join(ASSETS_DIR, "confusion_matrix.png"), dpi=300)
+    plt.savefig(os.path.join(settings.ASSETS_DIR, "confusion_matrix.png"), dpi=300)
     plt.close()
 
-    print(f"Saved charts in: {ASSETS_DIR}/")
+    print(f"Saved charts in: {settings.ASSETS_DIR}/")
 
 
 def markdown_table(results):
@@ -384,7 +362,7 @@ def markdown_table(results):
 
 
 def update_readme(results, args, total_samples, train_samples, test_samples):
-    if not os.path.exists(README_PATH):
+    if not os.path.exists(settings.README_PATH):
         return
 
     start_marker = "<!-- BENCHMARK_RESULTS_START -->"
@@ -416,7 +394,7 @@ Fastest training: **{fastest.model}** ({fastest.train_time_sec:.3f}s)
 </p>
 {end_marker}"""
 
-    with open(README_PATH, "r", encoding="utf-8") as file:
+    with open(settings.README_PATH, "r", encoding="utf-8") as file:
         readme = file.read()
 
     if start_marker in readme and end_marker in readme:
@@ -430,31 +408,30 @@ Fastest training: **{fastest.model}** ({fastest.train_time_sec:.3f}s)
         else:
             updated = f"{readme.rstrip()}\n\n{section}\n"
 
-    with open(README_PATH, "w", encoding="utf-8") as file:
+    with open(settings.README_PATH, "w", encoding="utf-8") as file:
         file.write(updated)
 
-    print(f"Updated README: {README_PATH}")
+    print(f"Updated README: {settings.README_PATH}")
 
 
 def parse_args():
-    default_workers = max(1, min(4, psutil.cpu_count(logical=False) or 1))
     parser = argparse.ArgumentParser(description="Compare ELM benchmark variants.")
-    parser.add_argument("--data", default=DATA_PATH, help="Path to KDD .gz dataset.")
+    parser.add_argument("--data", default=settings.DATA_PATH, help="Path to KDD .gz dataset.")
     parser.add_argument(
         "--max-samples",
         type=int,
-        default=120_000,
+        default=settings.BENCHMARK_MAX_SAMPLES,
         help="Limit rows for repeatable local benchmarks. Use 0 for full dataset.",
     )
-    parser.add_argument("--hidden-size", type=int, default=256)
-    parser.add_argument("--batch-size", type=int, default=10_000)
-    parser.add_argument("--workers", type=int, default=default_workers)
-    parser.add_argument("--test-size", type=float, default=0.3)
-    parser.add_argument("--eval-size", type=int, default=10_000)
-    parser.add_argument("--kb-size", type=int, default=20)
-    parser.add_argument("--min-reliability", type=float, default=None)
-    parser.add_argument("--activation", choices=["sigmoid", "relu", "linear"], default="sigmoid")
-    parser.add_argument("--random-state", type=int, default=42)
+    parser.add_argument("--hidden-size", type=int, default=settings.N_HIDDEN)
+    parser.add_argument("--batch-size", type=int, default=settings.BATCH_SIZE)
+    parser.add_argument("--workers", type=int, default=settings.available_workers())
+    parser.add_argument("--test-size", type=float, default=settings.TEST_SIZE)
+    parser.add_argument("--eval-size", type=int, default=settings.BENCHMARK_EVAL_SIZE)
+    parser.add_argument("--kb-size", type=int, default=settings.KB_SIZE)
+    parser.add_argument("--min-reliability", type=float, default=settings.MIN_RELIABILITY)
+    parser.add_argument("--activation", choices=["sigmoid", "relu", "linear"], default=settings.ACTIVATION)
+    parser.add_argument("--random-state", type=int, default=settings.RANDOM_STATE)
     return parser.parse_args()
 
 
