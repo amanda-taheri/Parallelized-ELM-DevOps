@@ -76,6 +76,7 @@ class ELMSVD:
     def _activate(self, x):
         """Hidden layer activation function."""
         if self.activation == 'sigmoid':
+            x = np.clip(x, -500, 500)
             return 1 / (1 + np.exp(-x))
         elif self.activation == 'relu':
             return np.maximum(0, x)

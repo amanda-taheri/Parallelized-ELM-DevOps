@@ -67,6 +67,7 @@ class ParallelELM:
 
     def _activate(self, x):
         if self.activation == 'sigmoid':
+            x = np.clip(x, -500, 500)
             return 1 / (1 + np.exp(-x))
         return np.maximum(0, x)
 
@@ -96,7 +97,7 @@ class ParallelELM:
 
         # 3. Parallel Execution (Multi-core)
         # Each worker calculates its own Beta_i
-        beta_list = Parallel(n_jobs=self.n_workers)(
+        beta_list = Parallel(n_jobs=self.n_workers, prefer="threads")(
             delayed(self._train_single_module)(X_blocks[i], y_blocks[i]) 
             for i in range(self.n_workers)
         )

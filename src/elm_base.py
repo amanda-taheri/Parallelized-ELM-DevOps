@@ -40,6 +40,7 @@ class ELMBase:
         are common to capture non-linear resource spikes.
         """
         if self.activation_type == 'sigmoid':
+            x = np.clip(x, -500, 500)
             return 1 / (1 + np.exp(-x))
         elif self.activation_type == 'relu':
             return np.maximum(0, x)

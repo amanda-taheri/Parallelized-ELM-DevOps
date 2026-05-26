@@ -62,6 +62,32 @@ This project implements the four main components of the P-ELM framework:
 
 ---
 
+<!-- BENCHMARK_RESULTS_START -->
+## Auto-Generated Benchmark Results
+
+Last updated: `2026-05-26 06:30:16`
+
+Dataset: `data/kddcup.data_10_percent.gz`  
+Samples used: `1,000` total, `700` train, `300` test  
+Configuration: `32` hidden neurons, `500` online batch size, `2` workers
+
+| Model | Accuracy | Anomaly Recall | Train Time | Throughput | Peak CPU | Peak RAM |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sequential ELM | 0.9833 | 0.9958 | 0.001s | 610,687/s | 0.0% | 980.6 MB |
+| Sequential SVD-ELM | 0.9833 | 0.9917 | 0.002s | 366,093/s | 11.1% | 980.8 MB |
+| Online Parallel ELM | 0.9833 | 0.9875 | 0.042s | 16,736/s | 5.4% | 980.8 MB |
+
+Best accuracy: **Sequential ELM** (0.9833)  
+Fastest training: **Sequential ELM** (0.001s)
+
+<p align="center">
+  <img src="assets/accuracy.png" width="48%" />
+  <img src="assets/performance.png" width="48%" />
+  <img src="assets/resources.png" width="48%" />
+  <img src="assets/confusion_matrix.png" width="48%" />
+</p>
+<!-- BENCHMARK_RESULTS_END -->
+
 ## 📚 Reference
 Based on the research paper:
 > **Parallelized Extreme Learning Machine for Online Data Classification**  

@@ -53,6 +53,7 @@ class OnlineParallelELM:
 
     def _activate(self, x):
         if self.activation == 'sigmoid':
+            x = np.clip(x, -500, 500)
             return 1 / (1 + np.exp(-x))
         elif self.activation == 'relu':
             return np.maximum(0, x)
@@ -114,7 +115,7 @@ class OnlineParallelELM:
         X_blocks = np.array_split(X_batch, self.n_workers)
         y_blocks = np.array_split(target_batch, self.n_workers)
         
-        local_betas = Parallel(n_jobs=self.n_workers)(
+        local_betas = Parallel(n_jobs=self.n_workers, prefer="threads")(
             delayed(self._train_block)(X_blocks[i], y_blocks[i]) for i in range(self.n_workers)
         )
 
