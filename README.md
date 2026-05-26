@@ -65,20 +65,20 @@ This project implements the four main components of the P-ELM framework:
 <!-- BENCHMARK_RESULTS_START -->
 ## Auto-Generated Benchmark Results
 
-Last updated: `2026-05-26 06:30:16`
+Last updated: `2026-05-26 06:33:53`
 
 Dataset: `data/kddcup.data_10_percent.gz`  
-Samples used: `1,000` total, `700` train, `300` test  
-Configuration: `32` hidden neurons, `500` online batch size, `2` workers
+Samples used: `120,000` total, `84,000` train, `36,000` test  
+Configuration: `256` hidden neurons, `10000` online batch size, `4` workers
 
 | Model | Accuracy | Anomaly Recall | Train Time | Throughput | Peak CPU | Peak RAM |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Sequential ELM | 0.9833 | 0.9958 | 0.001s | 610,687/s | 0.0% | 980.6 MB |
-| Sequential SVD-ELM | 0.9833 | 0.9917 | 0.002s | 366,093/s | 11.1% | 980.8 MB |
-| Online Parallel ELM | 0.9833 | 0.9875 | 0.042s | 16,736/s | 5.4% | 980.8 MB |
+| Sequential ELM | 0.9986 | 0.9990 | 0.800s | 104,946/s | 26.8% | 1222.9 MB |
+| Sequential SVD-ELM | 0.9949 | 0.9960 | 0.799s | 105,074/s | 24.2% | 1488.2 MB |
+| Online Parallel ELM | 0.9955 | 0.9954 | 1.428s | 58,810/s | 14.3% | 1533.7 MB |
 
-Best accuracy: **Sequential ELM** (0.9833)  
-Fastest training: **Sequential ELM** (0.001s)
+Best accuracy: **Sequential ELM** (0.9986)  
+Fastest training: **Sequential SVD-ELM** (0.799s)
 
 <p align="center">
   <img src="assets/accuracy.png" width="48%" />
