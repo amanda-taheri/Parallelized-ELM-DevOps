@@ -65,20 +65,24 @@ This project implements the four main components of the P-ELM framework:
 <!-- BENCHMARK_RESULTS_START -->
 ## Auto-Generated Benchmark Results
 
-Last updated: `2026-05-26 07:10:54`
-
+Last updated: `2026-06-11 09:22:10`  
+System: `Darwin arm64`  
 Dataset: `data/kddcup.data_10_percent.gz`  
-Samples used: `120,000` total, `84,000` train, `36,000` test  
-Configuration: `4096` hidden neurons, `40000` online batch size, `4` workers
+Task: **binary normal/anomaly detection**  
+Samples used: `120,000` total, `96,000` train, `24,000` test  
+Features: `41` | Classes: `2`  
+Configuration: hidden neurons = `min(batch_size, feature_dim)`, batch = `2000`, workers = `2`, split = `80%/20%`
 
-| Model | Accuracy | Anomaly Recall | Train Time | Throughput | Peak CPU | Peak RAM |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Sequential ELM | 0.9973 | 0.9993 | 73.265s | 1,147/s | 26.2% | 12882.8 MB |
-| Sequential SVD-ELM | 0.9949 | 0.9960 | 66.774s | 1,258/s | 23.4% | 12936.9 MB |
-| Online Parallel ELM | 0.9944 | 0.9942 | 192.278s | 437/s | 52.4% | 15871.3 MB |
+### Model Comparison
 
-Best accuracy: **Sequential ELM** (0.9973)  
-Fastest training: **Sequential SVD-ELM** (66.774s)
+| Model | Accuracy | Precision | Recall | F1 | Anomaly Recall | Train Time | Throughput | Peak CPU | Peak RAM |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Sequential ELM | 0.9942 | 0.9943 | 0.9942 | 0.9943 | 0.9951 | 0.081s | 1,184,467/s | 0.0% | 696.0 MB |
+| Sequential SVD-ELM | 0.9948 | 0.9948 | 0.9948 | 0.9948 | 0.9962 | 0.137s | 701,174/s | 21.8% | 818.5 MB |
+| Online Parallel ELM | 0.9942 | 0.9943 | 0.9942 | 0.9943 | 0.9950 | 0.439s | 218,583/s | 0.0% | 819.2 MB |
+
+Best accuracy: **Sequential SVD-ELM** (0.9948)  
+Fastest training: **Sequential ELM** (0.081s)
 
 <p align="center">
   <img src="assets/accuracy.png" width="48%" />
@@ -86,6 +90,7 @@ Fastest training: **Sequential SVD-ELM** (66.774s)
   <img src="assets/resources.png" width="48%" />
   <img src="assets/confusion_matrix.png" width="48%" />
 </p>
+
 <!-- BENCHMARK_RESULTS_END -->
 
 ## 📚 Reference
